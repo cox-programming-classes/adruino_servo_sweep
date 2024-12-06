@@ -10,6 +10,8 @@ void setup()
 {
   //Initialize the Servo motor connected to this pin.
   servo.attach(SERVO_PIN);
+  // Home the servo.
+  servo.write(0);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 }
 
@@ -19,11 +21,25 @@ void sweep()
   // start moving the servo to 0 degrees
   servo.write(0);
   // wait for the servo to get to 0 degrees
-  delay(500);
+  // A button Press will break out of this method!
+  if(delayOrBreakOnButtonPress(500, BUTTON_PIN)) 
+    return;
   // start moving the servo to 180 degrees
   servo.write(180);
   // wait...
-  delay(500);
+  delayOrBreakOnButtonPress(500, BUTTON_PIN)
+}
+
+bool delayOrBreakOnButtonPress(int milliseconds, int buttonPin)
+{
+  for(int i = 0; i < milliseconds; i += 20)
+  {
+    bool isPressed = digitalRead(buttonPin) == LOW;
+    if(isPressed) return true;
+    delay(20);
+  }
+
+  return false;
 }
 
 void loop() 
@@ -35,6 +51,8 @@ void loop()
   if(isPressed)
   {
     int potValue = analogRead(POT_PIN);
+    // map the potentiometer reading onto 
+    // the Servo's range, 0~180
     int position = map(potValue, 0, 1023, 0, 180);
     servo.write(position);
   }
